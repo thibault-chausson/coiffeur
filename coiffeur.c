@@ -42,7 +42,7 @@ void Coiffer ()
 void Client(int i)
 {
 
-pthread_mutex_lock(&mutex);
+	pthread_mutex_lock(&mutex);
 	if(NbClientsAttente<N) 
 	{
 		
@@ -51,7 +51,7 @@ pthread_mutex_lock(&mutex);
 		
 		printf("Le client %d avertit le coiffeur qu'il est la et s'assoit \n",i);
 		
-		 
+		
 		// on deverouille le mutex et attend que la condition soit signalée
 		NbClientsAttente ++;
 		pthread_cond_wait(&attendre,&mutex);
