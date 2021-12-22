@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <pthread.h>
+/*****/ #include <stdlib.h>
 
 #define NbTh 10      //Nombre de processus symbolisant les clients
 #define N  8	//Nombre de chaises dans le salon de coiffure
@@ -19,17 +20,18 @@ void Coiffer ()
 	
         if(NbClientsAttente>0) 
 		{
-		/*****/pthread_mutex_lock(&mutex);
 		// dit à un client de s'installer sur le fauteuil
-		/*****/pthread_cond_wait(&attendre, &mutex);
-		/*****/pthread_mutex_unlock(&mutex);
+		/*****/pthread_mutex_lock(&mutex);
+  	    	/*****/pthread_cond_wait(&attendre,&mutex);
+  	    	/*****/pthread_mutex_unlock(&mutex);
 		}
 	
 	else       {
-               /*****/pthread_cond_signal(&attendre);
 		printf("le coiffeur dort car pas de clients \n");
                // dit à un client de s'installer sur le fauteuil
-  	    	
+  	    	/*****/pthread_mutex_lock(&mutex);
+  	    	/*****/pthread_cond_wait(&dormir,&mutex);
+  	    	/*****/pthread_mutex_unlock(&mutex);
 		}
 	
 
@@ -49,14 +51,17 @@ void Client(int i)
 
 		// on deverouille le mutex et attend que la condition soit signalée
 		
-		/*****/pthread_mutex_lock(&mutex);
+		/*****/pthread_mutex_unlock(&mutex);
+		
 		
 		// attend qu'on lui dise de s'installer
 		
-		/*****/pthread_cond_wait(&attendre, &mutex);
+		/*****/pthread_cond_signal(&attendre);
+		
 		NbClientsAttente --;
+		
 		printf("Le coiffeur invite le client %d pour s'installer et le coiffer \n",(int)i);
-		/*****/pthread_mutex_unlock(&mutex);
+		
 	}
 	else {
 		printf("Le client %d ne trouve pas de place\n", i);
@@ -104,6 +109,7 @@ int main()
        
         
 	/* liberation des ressources");*/
+	
 	
 	/*****/ pthread_cond_destroy(&attendre);
 	/*****/ pthread_cond_destroy(&dormir);
