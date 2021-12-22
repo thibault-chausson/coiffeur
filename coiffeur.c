@@ -19,22 +19,21 @@ int NbClientsAttente=0;    //Nombre de clients en attente d'etre coiffes
 
 void Coiffer ()
 {
-	
-        if(NbClientsAttente>0) 
-		{
+	pthread_mutex_lock(&mutex);
+        if(NbClientsAttente>0) {
+        	pthread_mutex_unlock(&mutex);
 		// dit à un client de s'installer sur le fauteuil
-		/*****/pthread_cond_signal(&attendre);
+		pthread_cond_signal(&attendre);
   	    	
 		}
 	
-	else       {
-		printf("le coiffeur dort car pas de clients \n");
+	else    {
+		pthread_mutex_unlock(&mutex);
+		printf("Le coiffeur dort car pas de clients \n");
                // dit à un client de s'installer sur le fauteuil
-  	    	/*****/ pthread_mutex_lock(&mutex);
-  	    	/*****/pthread_cond_wait(&dormir,&mutex);
-  	    	/*****/ pthread_mutex_unlock(&mutex);
-  	    	
-  	    	
+  	    	pthread_mutex_lock(&mutex);
+  	    	pthread_cond_wait(&dormir,&mutex);
+  	    	pthread_mutex_unlock(&mutex);
 		}
 	
 
@@ -43,20 +42,20 @@ void Coiffer ()
 void Client(int i)
 {
 
- 
+pthread_mutex_lock(&mutex);
 	if(NbClientsAttente<N) 
 	{
-	
+		
 		// avertit le coiffeur qu'il est la et s'assoit
-		/*****/pthread_cond_signal(&dormir);
+		pthread_cond_signal(&dormir);
 		
 		printf("Le client %d avertit le coiffeur qu'il est la et s'assoit \n",i);
-		/*****/ pthread_mutex_lock(&mutex);
-
+		
+		 
 		// on deverouille le mutex et attend que la condition soit signalée
-		/*****/ NbClientsAttente ++;
-		/*****/pthread_cond_wait(&attendre,&mutex);
-		/*****/ pthread_mutex_unlock(&mutex);
+		NbClientsAttente ++;
+		pthread_cond_wait(&attendre,&mutex);
+		pthread_mutex_unlock(&mutex);
 		
 		
 	
@@ -65,15 +64,18 @@ void Client(int i)
 		// attend qu'on lui dise de s'installer
 		
 		
-		
+		pthread_mutex_lock(&mutex);
 		NbClientsAttente --;
-		
+		pthread_mutex_unlock(&mutex);
 		
 		printf("Le coiffeur invite le client %d pour s'installer et le coiffer \n",(int)i);
 		
 	}
+	
 	else {
+		pthread_mutex_unlock(&mutex);
 		printf("Le client %d ne trouve pas de place\n", i);
+		
 	}
 
 }
@@ -120,8 +122,10 @@ int main()
 	/* liberation des ressources*/
 	
 	
-	/*****/ pthread_cond_destroy(&attendre);
-	/*****/ pthread_cond_destroy(&dormir);
+	pthread_cond_destroy(&attendre);
+	printf("Le coiffeur se réveil car il vient de finir sa journée et il rentre chez lui\n");
+	pthread_cond_signal(&dormir);
+	pthread_cond_destroy(&dormir); 
 	
 	exit(0);
 }
